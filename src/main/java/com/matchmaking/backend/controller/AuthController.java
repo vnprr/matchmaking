@@ -1,12 +1,16 @@
 package com.matchmaking.backend.controller;
 
+import com.matchmaking.backend.config.JwtUtil;
 import com.matchmaking.backend.repository.UserRepository;
 import com.matchmaking.backend.model.User;
 import com.matchmaking.backend.model.Role;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Locale;
 import java.util.Map;
@@ -15,6 +19,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     private static final String USERNAME_KEY = "username";
     private static final String PASSWORD_KEY = "password";
@@ -38,14 +48,26 @@ public class AuthController {
         return getMessage("registration.success");
     }
 
+//    @PostMapping("/login")
+//    public String login(@RequestBody Map<String, String> credentials) {
+//        String username = credentials.get(USERNAME_KEY);
+//        String password = credentials.get(PASSWORD_KEY);
+//        if (areValidUserCredentials(username, password)) {
+//            return getMessage("login.success");
+//        }
+//        return getMessage("login.failure");
+//    }
     @PostMapping("/login")
-    public String login(@RequestBody Map<String, String> credentials) {
-        String username = credentials.get(USERNAME_KEY);
-        String password = credentials.get(PASSWORD_KEY);
-        if (areValidUserCredentials(username, password)) {
-            return getMessage("login.success");
+    public Map<String, String> login(@RequestBody Map<String, String> credentials) {
+        String username = credentials.get("username");
+        String password = credentials.get("password");
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (passwordEncoder.matches(password, userDetails.getPassword())) {
+            String token = jwtUtil.generateToken(userDetails);
+            return Map.of("token", token);
         }
-        return getMessage("login.failure");
+        return Map.of("error", "Invalid credentials");
     }
 
     private boolean areValidUserCredentials(String username, String password) {
