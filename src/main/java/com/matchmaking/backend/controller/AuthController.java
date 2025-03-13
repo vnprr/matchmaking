@@ -5,6 +5,7 @@ import com.matchmaking.backend.repository.UserRepository;
 import com.matchmaking.backend.model.User;
 import com.matchmaking.backend.model.Role;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,24 +16,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import java.util.Locale;
 import java.util.Map;
 
-@AllArgsConstructor
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    private static final String USERNAME_KEY = "username";
-    private static final String PASSWORD_KEY = "password";
-    private static final Locale DEFAULT_LOCALE = Locale.getDefault();
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MessageSource messageSource;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+
+    private static final String USERNAME_KEY = "username";
+    private static final String PASSWORD_KEY = "password";
+    private static final Locale DEFAULT_LOCALE = Locale.getDefault();
 
     @PostMapping("/register")
     public String register(@RequestBody Map<String, String> userData) {
@@ -48,15 +45,6 @@ public class AuthController {
         return getMessage("registration.success");
     }
 
-//    @PostMapping("/login")
-//    public String login(@RequestBody Map<String, String> credentials) {
-//        String username = credentials.get(USERNAME_KEY);
-//        String password = credentials.get(PASSWORD_KEY);
-//        if (areValidUserCredentials(username, password)) {
-//            return getMessage("login.success");
-//        }
-//        return getMessage("login.failure");
-//    }
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
