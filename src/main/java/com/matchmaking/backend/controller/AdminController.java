@@ -1,18 +1,15 @@
 package com.matchmaking.backend.controller;
 
+import com.matchmaking.backend.model.Recommendation;
 import com.matchmaking.backend.model.Role;
 import com.matchmaking.backend.model.User;
+import com.matchmaking.backend.service.MessageService;
+import com.matchmaking.backend.repository.RecommendationRepository;
 import com.matchmaking.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.context.MessageSource;
-
-import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -20,19 +17,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final MessageSource messageSource;
+    private final MessageService messageService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    private static final Locale DEFAULT_LOCALE = Locale.getDefault();
+    private final RecommendationRepository recommendationRepository;
 
     @GetMapping("/dashboard")
     public String adminDashboard() {
-        return getMessage("admin.login.success");
-    }
-
-    private String getMessage(String code) {
-        return messageSource.getMessage(code, null, DEFAULT_LOCALE);
+        return messageService.getMessage("admin.login.success");
     }
 
     private String createAdmin(
@@ -46,7 +38,7 @@ public class AdminController {
                 username
         ).isPresent()
         ) {
-            return getMessage("username.exists");
+            return messageService.getMessage("username.exists");
         }
 
         User admin = new User();
@@ -55,6 +47,23 @@ public class AdminController {
         admin.setRole(Role.ADMIN);
         userRepository.save(admin);
 
-        return getMessage("admin.login.success");
+        return messageService.getMessage("admin.login.success");
+    }
+
+    private String recommendUser(
+            @RequestParam Long userId,
+            @RequestParam String recommendedUserId,
+            @RequestParam(required = false) String note
+    ) {
+        User user = userRepository.findById(userId).orElseThrow(
+                ()->new RuntimeException(messageService.getMessage("user.not.found"))
+        );
+        User recommendedUser = userRepository.findById(userId).orElseThrow();
+
+        Recommendation recommendation = new Recommendation(null, user, recommendedUser, note);
+        recommendationRepository.save(recommendation);
+
+        return messageService.getMessage("admin.recommendation.success");
+
     }
 }

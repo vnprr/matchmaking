@@ -1,10 +1,7 @@
 package com.matchmaking.backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
@@ -26,5 +23,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    private String email;
+    private String phone;
+    private String firstName;
+    private String lastName;
 
 }

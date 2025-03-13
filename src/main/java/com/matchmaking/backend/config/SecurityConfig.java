@@ -21,8 +21,10 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // endpoint admin
-                        .anyRequest().authenticated()
+                        .anyRequest()
+                        .authenticated()
                 ).sessionManagement(
                         session -> session.sessionCreationPolicy(
                         SessionCreationPolicy.STATELESS)

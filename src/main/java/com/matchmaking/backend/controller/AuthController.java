@@ -4,9 +4,7 @@ import com.matchmaking.backend.config.JwtUtil;
 import com.matchmaking.backend.repository.UserRepository;
 import com.matchmaking.backend.model.User;
 import com.matchmaking.backend.model.Role;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -83,3 +81,4 @@ public class AuthController {
         return messageSource.getMessage(code, null, DEFAULT_LOCALE);
     }
 }
+

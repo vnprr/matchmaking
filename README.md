@@ -12,7 +12,7 @@
 
 The `MessageConfig` class is a Spring Boot configuration component that sets the message source for internationalization (i18n). 
 
-This class is used to load localized messages from resource bundles defined by the `messages` base name.
+This class is used to load localized messages from resource bundles defined by the [`messages`](#messagesproperties) base name.
 
 Uses **UTF-8** encoding.
 
@@ -27,7 +27,7 @@ Methods:
   - Returns: `ReloadableResourceBundleMessageSource` object.
 
 Related files: 
-- `messages.properties`
+- [`messages.properties`](#messagesproperties)
 
 ### 📁 Controller Package
 
@@ -50,6 +50,18 @@ The `AdminInitializer` class is a Spring Boot component that implements the `Com
 - **Integration with the rest of the system:**.  
   Is part of the application security system, in
 
+#### JwtRequestFilter
+
+#### JwtUtil
+
+#### MessageConfig
+
+#### UserDetailsServiceImpl
+
+#### SecurityConfig
+
+--------------------------------------
+
 ### 📁 Resources Package
 
 Path: `src/main/resources`
@@ -64,3 +76,48 @@ Properties read from the file include:
 - `createAdmin` - a flag that decides whether an account should be created,
 - `adminLogin` - username of the admin account,
 - `adminPassword` - the password of the admin account.
+
+#### messages.properties
+
+--------------------------------------
+
+### 📁 Model Package
+
+#### 👤 User
+User
+
+#### 🤵 UserDTO
+DTO (Data Transfer Object) is a simple object designated to transport data between layers of the application.
+
+--------------------------------------
+
+### 📁 Services Package
+`com/matchmaking/backend/service`
+
+#### 🏳️ Message Service
+##### Java class `MessageService.java`
+##### Decorators `@Service`
+
+Provides a centralized mechanism to retrieve localized messages from the underlying `MessageSource`. It simplifies message lookups by abstracting the direct calls to the MessageSource while using a default locale.
+
+##### Features
+
+- Uses a default locale obtained via `Locale.getDefault()`.
+- Wraps Spring's `MessageSource` for consistent internationalization (i18n).
+- Provides a single, reusable method for message retrieval.
+
+##### Usage
+
+1. **Injection:**  
+   Inject the `MessageService` into any Spring component (such as controllers or services):
+
+   ```java
+   private final MessageService messageService;
+   ```
+
+2. Retrieving a Message:
+   Call the getMessage method with the message code:
+
+   ```java
+    String successMessage = messageService.getMessage("registration.success");
+   ```
