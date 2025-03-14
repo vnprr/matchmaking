@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.matchmaking.backend.model.User;
 import com.matchmaking.backend.model.UserPhoto;
+import com.matchmaking.backend.model.UserPhotoDTO;
 import com.matchmaking.backend.repository.PhotoRepository;
 import com.matchmaking.backend.repository.UserRepository;
 import com.matchmaking.backend.service.MessageService;
@@ -57,36 +58,56 @@ public class UserPhotoController {
 
         List<UserPhoto> photos = photoRepository.findByUserId(user.getId());
 
+        boolean found = false;
         for (UserPhoto photo : photos) {
-            photo.setMain(Objects.equals(photo.getId(), photoId)); //tu może być błąd bo jest id a nie public id????
+            if (photo.getId().equals(photoId)) {
+                photo.setMain(true);
+                found = true;
+            } else {
+                photo.setMain(false);
+            }
             photoRepository.save(photo);
         }
-        return messageService.getMessage("photo.set.main");
+
+        return found ? messageService.getMessage("photo.set.main") : messageService.getMessage("photo.not.found");
     }
 
     @DeleteMapping("/{photoId}")
-    public String deletePhoto(Authentication authentication, @PathVariable Long photoId) throws IOException {
-        UserPhoto photo = photoRepository.findById(photoId).orElseThrow();
+    public String deletePhoto(
+            Authentication authentication,
+            @PathVariable Long photoId
+    ) throws IOException {
 
-        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException(
-                messageService.getMessage("user.not.found"))
-        );
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException(messageService.getMessage("user.not.found")));
 
-        if (!Objects.equals(photo.getUser().getId(), user.getId())) {
+        Optional<UserPhoto> optionalPhoto = photoRepository.findById(photoId);
+
+        if (optionalPhoto.isEmpty() || !Objects.equals(optionalPhoto.get().getUser().getId(), user.getId())) {
             return messageService.getMessage("permission.required");
         }
 
+        UserPhoto photo = optionalPhoto.get();
+        boolean wasMain = photo.getMain();
+
         cloudinary.uploader().destroy(photo.getPublicId(), ObjectUtils.emptyMap());
         photoRepository.delete(photo);
+
+        if (wasMain) {
+            return messageService.getMessage("choose.new.profile.photo");
+        }
         return messageService.getMessage("photo.delete.success");
     }
 
     @GetMapping
-    public List<UserPhoto> getUserPhotos(Authentication authentication) {
+    public List<UserPhotoDTO> getUserPhotos(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException(
                 messageService.getMessage("user.not.found"))
         );
 
-        return photoRepository.findByUserId(user.getId());
+        return photoRepository.findByUserId(user.getId())
+                .stream()
+                .map(photo -> new UserPhotoDTO(photo.getId(), photo.getUrl(), photo.getMain()))
+                .toList();
     }
 }

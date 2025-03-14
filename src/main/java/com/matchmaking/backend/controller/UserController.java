@@ -3,9 +3,11 @@ package com.matchmaking.backend.controller;
 import com.matchmaking.backend.model.PasswordChangeRequestDTO;
 import com.matchmaking.backend.model.User;
 import com.matchmaking.backend.model.UserDTO;
+import com.matchmaking.backend.repository.SubscriptionRepository;
 import com.matchmaking.backend.repository.UserRepository;
 import com.matchmaking.backend.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +22,11 @@ public class UserController {
     private final MessageService messageService;
 
     @GetMapping("/me")
-    public UserDTO getCurrentUser(
-            Authentication authentication
-    ) {
-        User user = userRepository.findByUsername(
-                authentication.getName()
-        ).orElseThrow(() -> new RuntimeException(
-                messageService.getMessage("user.not.found"))
-        );
+    public UserDTO getCurrentUser(Authentication authentication) {
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException(
+                        messageService.getMessage("user.not.found"))
+                );
 
         return new UserDTO(
                 user.getId(),
@@ -39,12 +38,8 @@ public class UserController {
         );
     }
 
-    // Update profile
     @PutMapping("/me")
-    public String updateUser(
-            Authentication authentication,
-            @RequestBody UserDTO userDTO) {
-
+    public String updateUser(Authentication authentication, @RequestBody UserDTO userDTO) {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException(
                         messageService.getMessage("user.not.found")
@@ -61,12 +56,9 @@ public class UserController {
     }
 
     @PutMapping("/me/password")
-    public String updatePassword(
-            Authentication authentication,
-            @RequestBody PasswordChangeRequestDTO request
-    ) {
+    public String updatePassword(Authentication authentication, @RequestBody PasswordChangeRequestDTO request) {
         User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(()-> new RuntimeException(
+                .orElseThrow(() -> new RuntimeException(
                         messageService.getMessage("user.not.found")
                 ));
 
@@ -83,13 +75,25 @@ public class UserController {
     @DeleteMapping("/me")
     public String deleteUser(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new RuntimeException(
-                    messageService.getMessage("user.not.found")
-            ));
+                .orElseThrow(() -> new RuntimeException(
+                        messageService.getMessage("user.not.found")
+                ));
 
         userRepository.delete(user);
 
         return messageService.getMessage("delete.success");
     }
 
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
+    @GetMapping("/me/subscription")
+    public com.matchmaking.backend.model.Subscription getSubscriptionStatus(Authentication authentication) {
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException(
+                        messageService.getMessage("user.not.found")
+                ));
+        return subscriptionRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Brak aktywnej subskrypcji"));
+    }
 }
