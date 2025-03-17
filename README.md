@@ -1,8 +1,37 @@
 # Server
 
+This repository contains the server-side code for the Matchmaking - an application to operate premium matrimonial services.
+
 ## 📁 File Structure
 
 
+
+```
+Server/
+├── src/
+│   └── main/
+│       ├── java/
+│       │   └── com/
+│       │       └── matchmaking/
+│       │           └── backend/
+│       │               ├── config/
+│       │               │   └── MessageConfig.java
+│       │               ├── controller/
+│       │               │   ├── AdminInitializer.java
+│       │               │   ├── JwtRequestFilter.java
+│       │               │   ├── JwtUtil.java
+│       │               │   ├── UserDetailsServiceImpl.java
+│       │               │   └── SecurityConfig.java
+│       │               ├── model/
+│       │               │   ├── User.java
+│       │               │   └── UserDTO.java
+│       │               └── service/
+│       │                   └── MessageService.java
+│       └── resources/
+│           ├── application.properties
+│           ├── createAdmin.yml
+│           └── messages.properties
+```
 
 ## ⚙️ Components
 
